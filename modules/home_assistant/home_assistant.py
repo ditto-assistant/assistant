@@ -5,6 +5,7 @@ import time
 
 import homeassistant_api
 
+
 class HomeAssistant:
     def __init__(self):
         try:
