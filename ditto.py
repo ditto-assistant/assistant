@@ -57,12 +57,15 @@ load_dotenv(override=True)
 
 
 class Assistant:
-
     def __init__(self, offline_mode=OFFLINE_MODE):
         log.info("[Booting...]")
         self.update_status_db("booting")
         self.config = AppConfig()
-        self.speech = Speech(offline_mode=offline_mode, mic=self.config.microphone, no_mic_mode=NO_MIC_MODE)
+        self.speech = Speech(
+            offline_mode=offline_mode,
+            mic=self.config.microphone,
+            no_mic_mode=NO_MIC_MODE,
+        )
         self.nlp_base_url: str = self.config.base_url()
         self.vision_base_url: str = self.config.base_url_vision()
         self.ditto_eyes = Eyes(
@@ -485,7 +488,7 @@ class Assistant:
         # record audio and listen for name
         log.info("Waitng for prompt...")
         self.speech.record_audio(activation_mode=self.activation_mode)
-        log.info("Done recording audio...")       
+        log.info("Done recording audio...")
         if self.speech.activation.activate:  # name has been spoken
             if self.speech.reset_conversation:
                 self.reset_conversation = True
