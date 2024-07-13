@@ -103,7 +103,7 @@ class Speech:
                     self.recording = False
                     if not headless:
                         pyautogui.press("ctrl")  # turns display on if asleep
-                        self.listening_indicator = 'listening...'
+                        self.listening_indicator = "listening..."
 
             else:
                 self.skip_wake = False  # set back to false

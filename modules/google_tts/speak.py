@@ -21,7 +21,9 @@ class Speak:
         # Build the voice request, select the language code ("en-US") and the ssml
         # voice gender ("neutral")
         self.voice = texttospeech.VoiceSelectionParams(
-            language_code="en-US", ssml_gender=texttospeech.SsmlVoiceGender.MALE, name="en-US-Wavenet-D"
+            language_code="en-US",
+            ssml_gender=texttospeech.SsmlVoiceGender.MALE,
+            name="en-US-Wavenet-D",
         )
 
         # Select the type of audio file you want returned

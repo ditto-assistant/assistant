@@ -27,18 +27,21 @@ from collections import deque
 
 whitelisted_files = []
 
+
 class IPCamera:
     def __init__(self):
-        self.camera1_url = os.getenv('ip_camera_1', None)
-        self.camera2_url = os.getenv('ip_camera_2', None)
+        self.camera1_url = os.getenv("ip_camera_1", None)
+        self.camera2_url = os.getenv("ip_camera_2", None)
         self.buffer_size = 20  # 20-second buffer
-        self.frame_buffer = deque(maxlen=self.buffer_size * 30)  # Assuming 30 frames per second
+        self.frame_buffer = deque(
+            maxlen=self.buffer_size * 30
+        )  # Assuming 30 frames per second
         self.stop_buffer_loop = False
 
-    def save_buffer(self, output_filename='output.mp4'):
+    def save_buffer(self, output_filename="output.mp4"):
         # Write the frames in the buffer to a video file
         height, width, _ = self.entitiy_detected_buffer[0].shape
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         out = cv2.VideoWriter(output_filename, fourcc, 30, (width, height))
 
         for frame in self.entitiy_detected_buffer:
@@ -54,7 +57,6 @@ class IPCamera:
         threading.Thread(target=self.start_buffer_loop).start()
 
     def start_buffer_loop(self):
-
         # Capture video from the IP cameras
         cap1 = cv2.VideoCapture(self.camera1_url)
         cap2 = cv2.VideoCapture(self.camera2_url)
@@ -70,11 +72,11 @@ class IPCamera:
             self.frame_buffer.append(frame2)
 
             # Display the frames (optional)
-            cv2.imshow('Camera 1', frame1)
-            cv2.imshow('Camera 2', frame2)
+            cv2.imshow("Camera 1", frame1)
+            cv2.imshow("Camera 2", frame2)
 
             # Break the loop if 'q' key is pressed
-            if (cv2.waitKey(1) & 0xFF == ord('q')) or self.stop_buffer_loop:
+            if (cv2.waitKey(1) & 0xFF == ord("q")) or self.stop_buffer_loop:
                 break
 
         # Release video capture objects
@@ -82,8 +84,7 @@ class IPCamera:
         cap2.release()
         cv2.destroyAllWindows()
 
-
-    def add_to_buffer_entity_detected(self, output_filename='output.mp4'):
+    def add_to_buffer_entity_detected(self, output_filename="output.mp4"):
         # start a thread that runs add_to_buffer_entity_detected
         ## make a folder 'entities_detected' and save the video as 'entity.mp4' if this file already exists, add a number to the end of the file name that is not already taken (entity1.mp4, entity2.mp4, etc) incrementing the number
 
@@ -91,7 +92,7 @@ class IPCamera:
         buffer_copy = self.frame_buffer.copy()
 
         # make a new buffer
-        buffer = deque(maxlen=self.buffer_size * 30) # Assuming 30 frames per second
+        buffer = deque(maxlen=self.buffer_size * 30)  # Assuming 30 frames per second
 
         # Capture video from the IP cameras
         cap1 = cv2.VideoCapture(self.camera1_url)
@@ -109,11 +110,11 @@ class IPCamera:
             buffer.append(frame2)
 
             # Display the frames (optional)
-            cv2.imshow('Camera 1', frame1)
-            cv2.imshow('Camera 2', frame2)
+            cv2.imshow("Camera 1", frame1)
+            cv2.imshow("Camera 2", frame2)
 
             # Break the loop if 'q' key is pressed
-            if (cv2.waitKey(1) & 0xFF == ord('q')) or self.stop_buffer_loop:
+            if (cv2.waitKey(1) & 0xFF == ord("q")) or self.stop_buffer_loop:
                 break
 
         # Release video capture objects
@@ -125,31 +126,37 @@ class IPCamera:
         self.entitiy_detected_buffer = buffer_copy + buffer
 
         # save the buffer to a file
-        self.save_buffer(output_filename=output_filename) 
-
+        self.save_buffer(output_filename=output_filename)
 
     def add_to_buffer(self):
         # start a thread that runs add_to_buffer_entity_detected
         ## make a folder 'entities_detected' and save the video as 'entity.mp4' if this file already exists, add a number to the end of the file name that is not already taken (entity1.mp4, entity2.mp4, etc) incrementing the number
 
-        if not os.path.exists('entities_detected'):
-            os.mkdir('entities_detected')
-        
-        if not os.path.exists('entities_detected/entity.mp4'):
+        if not os.path.exists("entities_detected"):
+            os.mkdir("entities_detected")
+
+        if not os.path.exists("entities_detected/entity.mp4"):
             self.add_to_buffer_entity_detected()
         else:
-            entity_videos = os.listdir('entities_detected')
+            entity_videos = os.listdir("entities_detected")
             last_entity_video = entity_videos[-1]
-            last_entity_video_number = int(last_entity_video.split('.')[0].split('entity')[1])
+            last_entity_video_number = int(
+                last_entity_video.split(".")[0].split("entity")[1]
+            )
             new_entity_video_number = last_entity_video_number + 1
-            self.add_to_buffer_entity_detected(output_filename=f'entities_detected/entity{new_entity_video_number}.mp4')
+            self.add_to_buffer_entity_detected(
+                output_filename=f"entities_detected/entity{new_entity_video_number}.mp4"
+            )
 
-        log.info(f'Starting thread to save video buffer to entities_detected/entity{new_entity_video_number}.mp4')
+        log.info(
+            f"Starting thread to save video buffer to entities_detected/entity{new_entity_video_number}.mp4"
+        )
 
-        threading.Thread(target=self.add_to_buffer_entity_detected(
-            output_filename=f'entities_detected/entity{new_entity_video_number}.mp4'
-        )).start()
-
+        threading.Thread(
+            target=self.add_to_buffer_entity_detected(
+                output_filename=f"entities_detected/entity{new_entity_video_number}.mp4"
+            )
+        ).start()
 
 
 class DittoSecurityVision:
@@ -197,18 +204,36 @@ class DittoSecurityVision:
             else:
                 continue
         return entities
-    
+
     def reset_camera_folders(self):
         log.info("Resetting camera folders...")
         for camera in self.cameras:
             # delete each folder in the camera folder
             for folder in os.listdir(self.path + "ftp/" + camera):
                 # iterate through each file in the folder and delete it
-                for file in os.listdir(self.path + "ftp/" + camera + "/" + folder + "/images/"):
+                for file in os.listdir(
+                    self.path + "ftp/" + camera + "/" + folder + "/images/"
+                ):
                     try:
-                        os.remove(self.path + "ftp/" + camera + "/" + folder + "/images/" + file)
+                        os.remove(
+                            self.path
+                            + "ftp/"
+                            + camera
+                            + "/"
+                            + folder
+                            + "/images/"
+                            + file
+                        )
                     except BaseException as e:
-                        bad_file = self.path + "ftp/" + camera + "/" + folder + "/images/" + file
+                        bad_file = (
+                            self.path
+                            + "ftp/"
+                            + camera
+                            + "/"
+                            + folder
+                            + "/images/"
+                            + file
+                        )
                         log.error(f"Could not delete file: {bad_file}")
                         return bad_file
         log.info("Done.")
@@ -260,7 +285,6 @@ class DittoSecurityVision:
                             base64_str = base64.b64encode(buffered.getvalue())
                             entities = self.qa_for_entities(image=base64_str)
                             if not entities == []:
-
                                 log.info(f"Found entities: {entities}")
 
                                 # save video buffer to entities folder in a separate thread
